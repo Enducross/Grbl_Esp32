@@ -40,8 +40,41 @@ Some features should not be changed. See notes below.
 #include <Arduino.h>
 
 //#define ESP_DEBUG
-#define N_AXIS 3 // Number of axes defined (valid range: 3 to 6) 
 
+#define CPU_MAP_MPCNC_5X
+
+// Serial baud rate
+#define BAUD_RATE 115200
+
+#ifdef CPU_MAP_MPCNC_5X
+  // 4, 5 & 6 axis support only for RAMPS 1.4 (for the moment :-)...)
+  #define N_AXIS 5            // Number of axes
+  #define N_AXIS_LINEAR 5     // Number of linears axis
+#else
+  #define N_AXIS 3 // Number of axes defined (valid range: 3 to 6)
+#endif
+
+#define AXIS_1 0        // Axis indexing value. Must start with 0 and be continuous.
+#define AXIS_1_NAME 'X' // Axis names must be in X, Y, Z, A, B, C, U, V & W.
+#define AXIS_2 1
+#define AXIS_2_NAME 'Y'
+#define AXIS_3 2
+#define AXIS_3_NAME 'Z'
+
+#if N_AXIS <3
+  #error "N_AXIS must be >= 3. N_AXIS < 3 is not implemented."
+#endif
+#if N_AXIS > 3
+  #define AXIS_4 3
+  #define AXIS_4_NAME 'X' // Letter of axis number 4
+#endif
+#if N_AXIS > 4
+  #define AXIS_5 4
+  #define AXIS_5_NAME 'Y' // Letter of axis number 5
+#endif
+#if N_AXIS > 5
+  #error "N_AXIS must be <= 5. N_AXIS > 5 is not implemented."
+#endif
 // Define CPU pin map and default settings.
 // NOTE: OEMs can avoid the need to maintain/update the defaults.h and cpu_map.h files and use only
 // one configuration file by placing their specific defaults and pin map at the bottom of this file.
@@ -50,8 +83,7 @@ Some features should not be changed. See notes below.
 #define VERBOSE_HELP // adds addition help info, but could confuse some senders
 
 
-// Serial baud rate
-#define BAUD_RATE 115200
+
 
 #define ENABLE_BLUETOOTH // enable bluetooth ... turns of if $I= something
 
@@ -168,9 +200,9 @@ Some features should not be changed. See notes below.
 // will not be affected by pin sharing.
 
 // NOTE: Defaults are set for a traditional 3-axis CNC machine. Z-axis first to clear, followed by X & Y.  
-#define HOMING_CYCLE_0 (1<<Z_AXIS)	// TYPICALLY REQUIRED: First move Z to clear workspace.
-#define HOMING_CYCLE_1 (1<<X_AXIS)  
-#define HOMING_CYCLE_2 (1<<Y_AXIS)
+#define HOMING_CYCLE_0 (1<<AXIS_3) // Home Z axis
+#define HOMING_CYCLE_1 ((1<<AXIS_1)|(1<<AXIS_4))   //HomeX
+#define HOMING_CYCLE_2 ((1<<AXIS_2)|(1<<AXIS_5))  // HomeY
 
 // NOTE: The following is for for homingg X and Y at the same time
 // #define HOMING_CYCLE_0 (1<<Z_AXIS) // first home z by itself
@@ -419,7 +451,7 @@ Some features should not be changed. See notes below.
 // Sets which axis the tool length offset is applied. Assumes the spindle is always parallel with
 // the selected axis with the tool oriented toward the negative direction. In other words, a positive
 // tool length offset value is subtracted from the current location.
-#define TOOL_LENGTH_OFFSET_AXIS Z_AXIS // Default z-axis. Valid values are X_AXIS, Y_AXIS, or Z_AXIS.
+#define TOOL_LENGTH_OFFSET_AXIS AXIS_3 // Default z-axis. Valid values are X_AXIS, Y_AXIS, or Z_AXIS.
 
 // Enables variable spindle output voltage for different RPM values. On the Arduino Uno, the spindle
 // enable pin will output 5V for maximum RPM with 256 intermediate levels and 0V when disabled.
@@ -644,7 +676,7 @@ Some features should not be changed. See notes below.
 //#define PARKING_ENABLE  // Default disabled. Uncomment to enable
 
 // Configure options for the parking motion, if enabled.
-#define PARKING_AXIS Z_AXIS // Define which axis that performs the parking motion
+#define PARKING_AXIS AXIS_3 // Define which axis that performs the parking motion
 #define PARKING_TARGET -5.0 // Parking axis target. In mm, as machine coordinate [-max_travel,0].
 #define PARKING_RATE 500.0 // Parking fast rate after pull-out in mm/min.
 #define PARKING_PULLOUT_RATE 100.0 // Pull-out/plunge slow feed rate in mm/min.
